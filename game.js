@@ -7,7 +7,7 @@ const config = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 300 }, // Gravidade para os ingredientes caírem
+            gravity: { y: 0 }, // Removemos a gravidade global
             debug: false // Desativado para uma aparência limpa
         }
     },
@@ -54,70 +54,43 @@ function preload() {
     ];
 
     imagens.forEach(img => {
-        console.log(`Carregando imagem: ${img.key} de ${img.path}`);
         this.load.image(img.key, img.path);
-    });
-
-    this.load.on('complete', () => {
-        console.log('Todas as imagens foram carregadas com sucesso.');
-    });
-
-    this.load.on('filecomplete', (key, type, data) => {
-        console.log(`Imagem carregada com sucesso: ${key}`);
-    });
-
-    this.load.on('loaderror', (fileObj) => {
-        console.error(`Erro ao carregar a imagem: ${fileObj.key} de ${fileObj.src}`);
     });
 }
 
 function create() {
-    console.log('Criando a cena do jogo.');
-
     // Adicionar o plano de fundo
-    this.add.image(360, 640, 'background').setScale(1);
-    console.log('Plano de fundo adicionado.');
+    this.add.image(360, 640, 'background');
 
     // Adicionar a espátula como jogador
-    espatula = this.physics.add.sprite(360, 1200, 'spatula') // Posicionado na parte inferior
+    espatula = this.physics.add.sprite(360, 1200, 'spatula')
         .setCollideWorldBounds(true)
-        .setScale(0.25); // Reduzido para metade do tamanho
-    console.log('Espátula criada:', espatula);
+        .setScale(0.15); // Reduzido o tamanho da espátula
 
     // Criar grupo de ingredientes
-    ingredientes = this.physics.add.group({
-        allowGravity: true,
-        gravityY: 300
-    });
-    console.log('Grupo de ingredientes criado.');
+    ingredientes = this.physics.add.group();
 
     // Gerar os ingredientes periodicamente
     this.time.addEvent({
-        delay: 800, // Intervalo entre os spawns
+        delay: 800,
         callback: () => spawnIngredientes(this),
         loop: true
     });
-    console.log('Evento de spawn de ingredientes configurado.');
 
     // Configurar controles do jogador
     cursors = this.input.keyboard.createCursorKeys();
-    console.log('Controles do jogador configurados.');
 
     // Texto de pontuação
     scoreText = this.add.text(16, 16, 'Pontuação: 0', { fontSize: '32px', fill: '#fff' });
-    console.log('Texto de pontuação adicionado.');
 
     // Texto de vidas
-    livesText = this.add.text(100, 60, 'Vidas:', { fontSize: '32px', fill: '#fff' }); // Reposicionado para dar espaço aos ícones
-    console.log('Texto de vidas adicionado.');
+    livesText = this.add.text(130, 60, 'Vidas:', { fontSize: '32px', fill: '#fff' }); // Reposicionado para dar espaço aos ícones
 
     // Adicionar os ícones de vida antes do texto "Vidas:"
     addLifeIcons(this);
-    console.log('Ícones de vida adicionados.');
 
     // Colisão entre espátula e ingredientes
     this.physics.add.overlap(espatula, ingredientes, collectIngrediente, null, this);
-    console.log('Colisão entre espátula e ingredientes configurada.');
 
     // Criar um sensor na parte inferior da tela para detectar ingredientes que atingem o fundo
     let bottomSensor = this.physics.add.staticImage(360, 1280, null).setDisplaySize(720, 10);
@@ -125,7 +98,6 @@ function create() {
 
     // Detectar colisão entre ingredientes e o sensor inferior
     this.physics.add.overlap(ingredientes, bottomSensor, ingredienteAtingiuFundo, null, this);
-    console.log('Sensor inferior configurado.');
 }
 
 function update(time) {
@@ -137,7 +109,7 @@ function update(time) {
         espatula.setVelocityX(0);
     }
 
-    if (time - lastSpeedIncrease > 20000) { // Aumentar velocidade a cada 20 segundos
+    if (time - lastSpeedIncrease > 20000) {
         aumentarVelocidade();
         lastSpeedIncrease = time;
     }
@@ -146,7 +118,6 @@ function update(time) {
         gameOver = true;
         this.add.text(200, 600, 'Game Over!', { fontSize: '64px', fill: '#ff0000' });
         this.physics.pause();
-        console.log('Game Over!');
     }
 }
 
@@ -163,12 +134,10 @@ function spawnIngredientes(scene) {
     }
 
     let ingrediente = scene.physics.add.sprite(randomX, -50, randomIngrediente)
-        .setScale(0.12) // Ajuste o scale conforme necessário
+        .setScale(0.08) // Ajustado o tamanho dos ingredientes
         .setVelocityY(200 * velocityMultiplier)
         .setCollideWorldBounds(false)
         .setBounce(0);
-
-    ingrediente.body.allowGravity = true;
 
     ingredientes.add(ingrediente);
 }
@@ -188,7 +157,7 @@ function collectIngrediente(espatula, ingrediente) {
             break;
         case 'fly':
             score -= 15;
-            velocityMultiplier = Math.min(velocityMultiplier * 1.5, 5); // Limitar o multiplier
+            velocityMultiplier = Math.min(velocityMultiplier * 1.5, 5);
             break;
         case 'chili_pepper':
             score -= 20;
@@ -218,7 +187,6 @@ function collectIngrediente(espatula, ingrediente) {
 }
 
 function ingredienteAtingiuFundo(ingrediente, sensor) {
-    console.log(`Ingrediente atingiu o fundo: ${ingrediente.texture.key}`);
     if (ingrediente.texture.key !== 'mouse') {
         vidas--;
         if (vidas < 0) vidas = 0;
@@ -230,7 +198,6 @@ function ingredienteAtingiuFundo(ingrediente, sensor) {
         gameOver = true;
         this.add.text(200, 600, 'Game Over!', { fontSize: '64px', fill: '#ff0000' });
         this.physics.pause();
-        console.log('Game Over!');
     }
 }
 
@@ -238,19 +205,16 @@ function spawnSecret(scene) {
     let randomX = Phaser.Math.Between(50, 670);
 
     let secret = scene.physics.add.sprite(randomX, -50, 'secret')
-        .setScale(0.12)
+        .setScale(0.08)
         .setVelocityY(200 * velocityMultiplier)
         .setCollideWorldBounds(false)
         .setBounce(0);
-
-    secret.body.allowGravity = true;
 
     ingredientes.add(secret);
 }
 
 function aumentarVelocidade() {
     velocityMultiplier += 0.2;
-    console.log(`Aumentando velocidade. Novo multiplier: ${velocityMultiplier}`);
 }
 
 function updateLivesText() {
@@ -263,7 +227,7 @@ function addLifeIcons(scene) {
     let spacing = 30; // Aumentado para acomodar ícones maiores
 
     for (let i = 0; i < vidas; i++) {
-        let lifeIcon = scene.add.image(startX + i * spacing, startY + 16, 'life_icon').setScale(0.04); // Dobrado o tamanho
+        let lifeIcon = scene.add.image(startX + i * spacing, startY + 16, 'life_icon').setScale(0.08); // Dobrado o tamanho
         lifeIcons.push(lifeIcon);
     }
 }
@@ -280,7 +244,7 @@ function addLifeIcon(scene) {
         let startX = 16;
         let startY = 60;
         let spacing = 30;
-        let lifeIcon = scene.add.image(startX + lifeIcons.length * spacing, startY + 16, 'life_icon').setScale(0.04);
+        let lifeIcon = scene.add.image(startX + lifeIcons.length * spacing, startY + 16, 'life_icon').setScale(0.08);
         lifeIcons.push(lifeIcon);
     }
 }
