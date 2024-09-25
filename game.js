@@ -1,14 +1,14 @@
 // Configuração básica do Phaser
 const config = {
     type: Phaser.AUTO,
-    width: 720,
+    width: 720, // Para telemóvel, ajustado para 9:16
     height: 1280,
     backgroundColor: '#1d212d',
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 300 }, // Gravidade global
-            debug: false // Desativado para uma aparência limpa
+            gravity: { y: 200 }, // Gravidade para os objetos que caem
+            debug: false
         }
     },
     scene: {
@@ -24,101 +24,75 @@ const game = new Phaser.Game(config);
 let espatula;
 let ingredientes;
 let cursors;
-let vidas = 3;
+let vidas = 3; // 3 vidas
 let score = 0;
 let gameOver = false;
 let scoreText;
 let livesText;
-let velocityMultiplier = 1;
+let velocityMultiplier = 1; // Controla o aumento da velocidade
 let lastSpeedIncrease = 0;
-let secretActive = false;
-
-// Array para armazenar os ícones de vida
-let lifeIcons = [];
-const maxLives = 5; // Definindo um máximo de vidas
+let secretActive = false; // Controla se o secret pode aparecer
 
 function preload() {
-    const imagens = [
-        { key: 'background', path: 'images/background.png' },
-        { key: 'egg', path: 'images/egg.png' },
-        { key: 'flour', path: 'images/flour.png' },
-        { key: 'almond', path: 'images/almond.png' },
-        { key: 'fly', path: 'images/fly.png' },
-        { key: 'chili_pepper', path: 'images/chili_pepper.png' },
-        { key: 'secret', path: 'images/secret.png' },
-        { key: 'spatula', path: 'images/spatula.png' }, // Usando 'spatula' como jogador
-        { key: 'life_icon', path: 'images/life_icon.png' },
-        { key: 'mouse', path: 'images/mouse.png' },
-        { key: 'sugar', path: 'images/sugar.png' }
-        // Removemos 'bowl' porque não temos 'bowl.png'
-    ];
-
-    imagens.forEach(img => {
-        this.load.image(img.key, img.path);
-    });
-
-    // Adicionar eventos de erro de carregamento
-    this.load.on('loaderror', (file) => {
-        console.error(`Erro ao carregar a imagem: ${file.key} de ${file.src}`);
-    });
+    // Carregar imagens
+    this.load.image('background', 'images/background.png');
+    this.load.image('egg', 'images/egg.png');
+    this.load.image('flour', 'images/flour.png');
+    this.load.image('almond', 'images/almond.png');
+    this.load.image('fly', 'images/fly.png');
+    this.load.image('chili_pepper', 'images/chili_pepper.png');
+    this.load.image('secret', 'images/secret.png');
+    this.load.image('spatula', 'images/spatula.png');
+    this.load.image('life_icon', 'images/life_icon.png');
+    this.load.image('mouse', 'images/mouse.png'); // Adiciona o rato
+    this.load.image('sugar', 'images/sugar.png'); // Adiciona o açúcar
 }
 
 function create() {
     // Adicionar o plano de fundo
-    this.add.image(360, 640, 'background');
+    this.add.image(360, 640, 'background'); // Centraliza o background para o tamanho 720x1280
 
-    // Adicionar a espátula como jogador
-    espatula = this.physics.add.sprite(360, 1200, 'spatula')
-        .setCollideWorldBounds(true)
-        .setScale(0.5); // Ajustado o tamanho da espátula
-
+    // Adicionar a espátula
+    espatula = this.physics.add.sprite(360, 1100, 'spatula').setCollideWorldBounds(true);
+    
     // Criar grupo de ingredientes
     ingredientes = this.physics.add.group();
-
-    // Gerar os ingredientes periodicamente
+    
+    // Gerar os primeiros ingredientes periodicamente
     this.time.addEvent({
-        delay: 800,
+        delay: 1000,  // Intervalo de 1 segundo entre ingredientes
         callback: () => spawnIngredientes(this),
         loop: true
     });
 
-    // Configurar controles do jogador
+    // Controles do jogador (movimento da espátula)
     cursors = this.input.keyboard.createCursorKeys();
 
-    // Texto de pontuação
+    // Texto de pontuação e vidas
     scoreText = this.add.text(16, 16, 'Pontuação: 0', { fontSize: '32px', fill: '#fff' });
-
-    // Texto de vidas
-    livesText = this.add.text(130, 60, 'Vidas:', { fontSize: '32px', fill: '#fff' }); // Reposicionado
-
-    // Adicionar os ícones de vida antes do texto "Vidas:"
-    addLifeIcons(this);
+    livesText = this.add.text(500, 16, 'Vidas: 3', { fontSize: '32px', fill: '#fff' });
 
     // Colisão entre espátula e ingredientes
     this.physics.add.overlap(espatula, ingredientes, collectIngrediente, null, this);
-
-    // Criar um sensor na parte inferior da tela para detectar ingredientes que atingem o fundo
-    let bottomSensor = this.physics.add.staticImage(360, 1280, null).setDisplaySize(720, 10);
-    bottomSensor.visible = false; // Tornar invisível
-
-    // Detectar colisão entre ingredientes e o sensor inferior
-    this.physics.add.overlap(ingredientes, bottomSensor, ingredienteAtingiuFundo, null, this);
 }
 
 function update(time) {
+    // Movimento da espátula
     if (cursors.left.isDown) {
-        espatula.setVelocityX(-300);
+        espatula.setVelocityX(-200); // Aumenta um pouco a velocidade
     } else if (cursors.right.isDown) {
-        espatula.setVelocityX(300);
+        espatula.setVelocityX(200);
     } else {
-        espatula.setVelocityX(0);
+        espatula.setVelocityX(0); // Para a espátula se não houver input
     }
 
+    // Aumentar a velocidade a cada 20 segundos
     if (time - lastSpeedIncrease > 20000) {
         aumentarVelocidade();
         lastSpeedIncrease = time;
     }
 
+    // Verificar fim de jogo
     if (vidas <= 0 && !gameOver) {
         gameOver = true;
         this.add.text(200, 600, 'Game Over!', { fontSize: '64px', fill: '#ff0000' });
@@ -126,34 +100,33 @@ function update(time) {
     }
 }
 
+// Função para gerar os ingredientes
 function spawnIngredientes(scene) {
-    let ingredientesBons = ['egg', 'flour', 'almond', 'sugar']; // Removido 'bowl'
+    let ingredientesBons = ['egg', 'flour', 'almond', 'sugar', 'bowl'];
     let ingredientesMaus = ['fly', 'chili_pepper', 'mouse'];
-    let randomX = Phaser.Math.Between(50, 670);
+    let randomX = Phaser.Math.Between(50, 670); // Geração aleatória de posição
     let randomIngrediente;
-
+    
+    // Decide aleatoriamente se gera um bom ou mau ingrediente
     if (Phaser.Math.Between(0, 10) > 3) {
         randomIngrediente = ingredientesBons[Phaser.Math.Between(0, ingredientesBons.length - 1)];
     } else {
         randomIngrediente = ingredientesMaus[Phaser.Math.Between(0, ingredientesMaus.length - 1)];
     }
 
-    let ingrediente = scene.physics.add.sprite(randomX, -50, randomIngrediente)
-        .setScale(0.15) // Ajustado o tamanho dos ingredientes
-        .setCollideWorldBounds(false)
-        .setBounce(0);
-
-    ingrediente.body.allowGravity = true; // Ativar gravidade no ingrediente
-
+    let ingrediente = scene.physics.add.sprite(randomX, 0, randomIngrediente);
+    ingrediente.setVelocityY(150 * velocityMultiplier); // Controla a velocidade com base no tempo
     ingredientes.add(ingrediente);
 }
 
+// Função de colisão com os ingredientes
 function collectIngrediente(espatula, ingrediente) {
-    ingrediente.disableBody(true, true);
+    ingrediente.disableBody(true, true); // Desativar o ingrediente quando apanhado
 
     switch (ingrediente.texture.key) {
         case 'egg':
         case 'flour':
+        case 'bowl':
         case 'sugar':
             score += 10;
             break;
@@ -162,95 +135,43 @@ function collectIngrediente(espatula, ingrediente) {
             break;
         case 'fly':
             score -= 15;
-            velocityMultiplier = Math.min(velocityMultiplier * 1.5, 5);
+            velocityMultiplier *= 2; // Aumenta a velocidade em 2x
             break;
         case 'chili_pepper':
             score -= 20;
             break;
         case 'mouse':
             vidas--;
-            if (vidas < 0) vidas = 0;
-            updateLivesText();
-            removeLifeIcon();
+            livesText.setText('Vidas: ' + vidas);
             break;
         case 'secret':
-            if (vidas < maxLives) {
-                vidas++;
-                updateLivesText();
-                addLifeIcon(this);
-            }
-            secretActive = false;
+            vidas++;
+            livesText.setText('Vidas: ' + vidas);
+            secretActive = false; // Secret já foi apanhado
             break;
     }
 
     scoreText.setText('Pontuação: ' + score);
 
+    // Verifica se é hora de aparecer o "secret" a cada 100 pontos
     if (score % 100 === 0 && score > 0 && !secretActive) {
-        spawnSecret(this);
-        secretActive = true;
+        spawnSecret(this); // Gera o "secret"
+        secretActive = true; // Ativa o "secret"
     }
 }
 
-function ingredienteAtingiuFundo(ingrediente, sensor) {
-    if (ingrediente.texture.key !== 'mouse') {
-        vidas--;
-        if (vidas < 0) vidas = 0;
-        updateLivesText();
-        removeLifeIcon();
-    }
-    ingrediente.destroy();
-    if (vidas <= 0 && !gameOver) {
-        gameOver = true;
-        this.add.text(200, 600, 'Game Over!', { fontSize: '64px', fill: '#ff0000' });
-        this.physics.pause();
-    }
-}
-
+// Função para gerar o "secret" que concede uma nova vida
 function spawnSecret(scene) {
     let randomX = Phaser.Math.Between(50, 670);
-
-    let secret = scene.physics.add.sprite(randomX, -50, 'secret')
-        .setScale(0.15) // Ajustado o tamanho
-        .setCollideWorldBounds(false)
-        .setBounce(0);
-
-    secret.body.allowGravity = true; // Ativar gravidade no ingrediente
-
+    let secret = scene.physics.add.sprite(randomX, 0, 'secret'); // Adiciona o "secret"
+    secret.setVelocityY(150 * velocityMultiplier);
     ingredientes.add(secret);
 }
 
+// Função para aumentar a velocidade
 function aumentarVelocidade() {
-    velocityMultiplier += 0.2;
-}
-
-function updateLivesText() {
-    livesText.setText('Vidas:');
-}
-
-function addLifeIcons(scene) {
-    let startX = 16; // Posicionado antes do texto "Vidas:"
-    let startY = 60;
-    let spacing = 30; // Espaçamento entre os ícones
-
-    for (let i = 0; i < vidas; i++) {
-        let lifeIcon = scene.add.image(startX + i * spacing, startY + 16, 'life_icon').setScale(0.08);
-        lifeIcons.push(lifeIcon);
-    }
-}
-
-function removeLifeIcon() {
-    if (lifeIcons.length > 0) {
-        let lifeIcon = lifeIcons.pop();
-        lifeIcon.destroy();
-    }
-}
-
-function addLifeIcon(scene) {
-    if (lifeIcons.length < maxLives) {
-        let startX = 16;
-        let startY = 60;
-        let spacing = 30;
-        let lifeIcon = scene.add.image(startX + lifeIcons.length * spacing, startY + 16, 'life_icon').setScale(0.08);
-        lifeIcons.push(lifeIcon);
-    }
+    velocityMultiplier += 0.2; // Aumenta a velocidade gradualmente a cada 20 segundos
+    ingredientes.getChildren().forEach(function (child) {
+        child.setVelocityY(150 * velocityMultiplier);
+    });
 }
