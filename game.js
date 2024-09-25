@@ -33,6 +33,10 @@ let velocityMultiplier = 1;
 let lastSpeedIncrease = 0;
 let secretActive = false;
 
+// Array para armazenar os ícones de vida
+let lifeIcons = [];
+const maxLives = 5; // Definindo um máximo de vidas
+
 function preload() {
     const imagens = [
         { key: 'background', path: 'images/background.png' },
@@ -70,21 +74,25 @@ function preload() {
 function create() {
     console.log('Criando a cena do jogo.');
 
+    // Adicionar o plano de fundo
     this.add.image(360, 640, 'background').setScale(1);
     console.log('Plano de fundo adicionado.');
 
+    // Adicionar a espátula
     espatula = this.physics.add.sprite(360, 1100, 'spatula')
         .setCollideWorldBounds(true)
-        .setScale(0.3); // Reduzido para 0.3
+        .setScale(0.2); // Reduzido para 0.2
     console.log('Espátula criada:', espatula);
 
-    // Adiciona um retângulo vermelho para debug visual
+    // Adiciona um retângulo vermelho para debug visual (pode remover após debug)
     this.add.rectangle(360, 1100, 50, 50, 0xff0000);
     console.log('Retângulo de debug adicionado na posição da espátula');
 
+    // Criar grupo de ingredientes
     ingredientes = this.physics.add.group();
     console.log('Grupo de ingredientes criado.');
 
+    // Gerar os primeiros ingredientes periodicamente
     this.time.addEvent({
         delay: 1000,
         callback: () => spawnIngredientes(this),
@@ -92,13 +100,19 @@ function create() {
     });
     console.log('Evento de spawn de ingredientes configurado.');
 
+    // Configurar controles do jogador
     cursors = this.input.keyboard.createCursorKeys();
     console.log('Controles do jogador configurados.');
 
+    // Texto de pontuação e vidas
     scoreText = this.add.text(16, 16, 'Pontuação: 0', { fontSize: '32px', fill: '#fff' });
-    livesText = this.add.text(500, 16, 'Vidas: 3', { fontSize: '32px', fill: '#fff' });
+    livesText = this.add.text(500, 16, 'Vidas: ' + vidas, { fontSize: '32px', fill: '#fff' });
     console.log('Textos de pontuação e vidas adicionados.');
 
+    // Adicionar os ícones de vida
+    addLifeIcons(this);
+
+    // Colisão entre espátula e ingredientes
     this.physics.add.overlap(espatula, ingredientes, collectIngrediente, null, this);
     console.log('Colisão entre espátula e ingredientes configurada.');
 }
@@ -143,7 +157,7 @@ function spawnIngredientes(scene) {
     console.log(`Spawnando ingrediente: ${randomIngrediente} na posição X: ${randomX}`);
 
     let ingrediente = scene.physics.add.sprite(randomX, 0, randomIngrediente)
-        .setScale(0.1) // Reduzido para 0.1
+        .setScale(0.05) // Reduzido para 0.05
         .setVelocityY(150 * velocityMultiplier);
     ingredientes.add(ingrediente);
     console.log(`Ingrediente criado: ${randomIngrediente}`);
@@ -172,11 +186,16 @@ function collectIngrediente(espatula, ingrediente) {
             break;
         case 'mouse':
             vidas--;
+            if (vidas < 0) vidas = 0; // Garantir que vidas não seja negativo
             livesText.setText('Vidas: ' + vidas);
+            removeLifeIcon();
             break;
         case 'secret':
-            vidas++;
-            livesText.setText('Vidas: ' + vidas);
+            if (vidas < maxLives) { // Verifica se não excede o máximo de vidas
+                vidas++;
+                livesText.setText('Vidas: ' + vidas);
+                addLifeIcon(this);
+            }
             secretActive = false;
             break;
     }
@@ -193,7 +212,7 @@ function spawnSecret(scene) {
     let randomX = Phaser.Math.Between(50, 670);
     console.log(`Spawnando secret na posição X: ${randomX}`);
     let secret = scene.physics.add.sprite(randomX, 0, 'secret')
-        .setScale(0.1)
+        .setScale(0.05)
         .setVelocityY(150 * velocityMultiplier);
     ingredientes.add(secret);
 }
@@ -204,4 +223,39 @@ function aumentarVelocidade() {
     ingredientes.getChildren().forEach(function (child) {
         child.setVelocityY(150 * velocityMultiplier);
     });
+}
+
+// Função para adicionar os ícones de vida
+function addLifeIcons(scene) {
+    // Definir posição inicial dos ícones de vida
+    let startX = 500; // Próximo ao texto de vidas
+    let startY = 50;   // Abaixo do texto
+    let spacing = 40;  // Espaçamento entre os ícones
+
+    for (let i = 0; i < vidas; i++) {
+        let lifeIcon = scene.add.image(startX + i * spacing, startY, 'life_icon').setScale(0.3); // Ajustar o scale conforme necessário
+        lifeIcons.push(lifeIcon);
+    }
+    console.log('Ícones de vida adicionados:', lifeIcons.length);
+}
+
+// Função para remover um ícone de vida
+function removeLifeIcon() {
+    if (lifeIcons.length > 0) {
+        let lifeIcon = lifeIcons.pop();
+        lifeIcon.destroy();
+        console.log('Ícone de vida removido. Vidas restantes:', lifeIcons.length);
+    }
+}
+
+// Função para adicionar um ícone de vida
+function addLifeIcon(scene) {
+    if (lifeIcons.length < maxLives) { // Definir um máximo, por exemplo, 5 vidas
+        let startX = 500;
+        let startY = 50;
+        let spacing = 40;
+        let lifeIcon = scene.add.image(startX + lifeIcons.length * spacing, startY, 'life_icon').setScale(0.3);
+        lifeIcons.push(lifeIcon);
+        console.log('Ícone de vida adicionado. Total vidas:', lifeIcons.length);
+    }
 }
