@@ -8,7 +8,7 @@ const config = {
         default: 'arcade',
         arcade: {
             gravity: { y: 300 }, // Aumentei a gravidade para tornar a queda mais rápida
-            debug: true // Ativado para visualizar as caixas de colisão, pode desativar depois
+            debug: false // Desativado para eliminar o rasto verde
         }
     },
     scene: {
@@ -79,9 +79,9 @@ function create() {
     console.log('Plano de fundo adicionado.');
 
     // Adicionar a espátula
-    espatula = this.physics.add.sprite(360, 1200, 'spatula') // Ajustei y para 1200
+    espatula = this.physics.add.sprite(360, 1200, 'spatula') // Ajustei y para 1200 para ficar na parte inferior
         .setCollideWorldBounds(true)
-        .setScale(0.3); // Reduzido para 0.3 (dobro de 0.15)
+        .setScale(0.5); // Aumentei para 0.5 para torná-la mais visível
     console.log('Espátula criada:', espatula);
 
     // Criar grupo de ingredientes
@@ -183,7 +183,7 @@ function spawnIngredientes(scene) {
     console.log(`Spawnando ingrediente: ${randomIngrediente} na posição X: ${randomX}`);
 
     let ingrediente = scene.physics.add.sprite(randomX, 0, randomIngrediente)
-        .setScale(0.06) // Reduzido para 0.06 (dobro de 0.03)
+        .setScale(0.12) // Aumentei para 0.12 para dobrar o tamanho anterior de 0.06
         .setVelocityY(200 * velocityMultiplier); // Aumentei a velocidade
     ingredientes.add(ingrediente);
     console.log(`Ingrediente criado: ${randomIngrediente}`);
@@ -242,7 +242,7 @@ function spawnSecret(scene) {
     let randomX = Phaser.Math.Between(50, 670);
     console.log(`Spawnando secret na posição X: ${randomX}`);
     let secret = scene.physics.add.sprite(randomX, 0, 'secret')
-        .setScale(0.06) // Reduzido para 0.06 (dobro de 0.03)
+        .setScale(0.12) // Aumentei para 0.12 para dobrar o tamanho anterior de 0.06
         .setVelocityY(200 * velocityMultiplier);
     ingredientes.add(secret);
     console.log('Secret criado');
@@ -266,7 +266,7 @@ function addLifeIcons(scene) {
     let spacing = 30;  // Espaçamento entre os ícones
 
     for (let i = 0; i < vidas; i++) {
-        let lifeIcon = scene.add.image(startX + i * spacing, startY, 'life_icon').setScale(0.05); // Ajustado para 0.05
+        let lifeIcon = scene.add.image(startX + i * spacing, startY, 'life_icon').setScale(0.03); // Reduzido para 0.03
         lifeIcons.push(lifeIcon);
     }
     console.log('Ícones de vida adicionados:', lifeIcons.length);
@@ -287,7 +287,7 @@ function addLifeIcon(scene) {
         let startX = 120;
         let startY = 60;
         let spacing = 30;
-        let lifeIcon = scene.add.image(startX + lifeIcons.length * spacing, startY, 'life_icon').setScale(0.05);
+        let lifeIcon = scene.add.image(startX + lifeIcons.length * spacing, startY, 'life_icon').setScale(0.03);
         lifeIcons.push(lifeIcon);
         console.log('Ícone de vida adicionado. Total vidas:', lifeIcons.length);
     }
