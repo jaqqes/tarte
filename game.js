@@ -35,13 +35,17 @@ let secretActive = false; // Controla se o secret pode aparecer
 
 function preload() {
     // Carregar imagens
-this.load.image('background', 'images/background.png');
-this.load.image('egg', 'images/egg.png');
-this.load.image('flour', 'images/flour.png');
-this.load.image('almond', 'images/almond.png');
-this.load.image('fly', 'images/fly.png');
-this.load.image('chili_pepper', 'images/chili_pepper.png');
-this.load.image('secret', 'images/secret.png');
+    this.load.image('background', 'images/background.png');
+    this.load.image('egg', 'images/egg.png');
+    this.load.image('flour', 'images/flour.png');
+    this.load.image('almond', 'images/almond.png');
+    this.load.image('fly', 'images/fly.png');
+    this.load.image('chili_pepper', 'images/chili_pepper.png');
+    this.load.image('secret', 'images/secret.png');
+    this.load.image('spatula', 'images/spatula.png');
+    this.load.image('life_icon', 'images/life_icon.png');
+    this.load.image('mouse', 'images/mouse.png'); // Adiciona o rato
+    this.load.image('sugar', 'images/sugar.png'); // Adiciona o açúcar
 }
 
 function create() {
@@ -51,29 +55,35 @@ function create() {
     // Adicionar a espátula
     espatula = this.physics.add.sprite(360, 1100, 'spatula').setCollideWorldBounds(true);
     
-    // Grupo de ingredientes
+    // Criar grupo de ingredientes
     ingredientes = this.physics.add.group();
-    spawnIngredientes(this); // Gerar os primeiros ingredientes
     
-    // Controles do jogador
+    // Gerar os primeiros ingredientes periodicamente
+    this.time.addEvent({
+        delay: 1000,  // Intervalo de 1 segundo entre ingredientes
+        callback: () => spawnIngredientes(this),
+        loop: true
+    });
+
+    // Controles do jogador (movimento da espátula)
     cursors = this.input.keyboard.createCursorKeys();
-    
+
     // Texto de pontuação e vidas
     scoreText = this.add.text(16, 16, 'Pontuação: 0', { fontSize: '32px', fill: '#fff' });
     livesText = this.add.text(500, 16, 'Vidas: 3', { fontSize: '32px', fill: '#fff' });
 
     // Colisão entre espátula e ingredientes
-    this.physics.add.collider(espatula, ingredientes, collectIngrediente, null, this);
+    this.physics.add.overlap(espatula, ingredientes, collectIngrediente, null, this);
 }
 
 function update(time) {
     // Movimento da espátula
     if (cursors.left.isDown) {
-        espatula.setVelocityX(-160);
+        espatula.setVelocityX(-200); // Aumenta um pouco a velocidade
     } else if (cursors.right.isDown) {
-        espatula.setVelocityX(160);
+        espatula.setVelocityX(200);
     } else {
-        espatula.setVelocityX(0);
+        espatula.setVelocityX(0); // Para a espátula se não houver input
     }
 
     // Aumentar a velocidade a cada 20 segundos
@@ -92,8 +102,8 @@ function update(time) {
 
 // Função para gerar os ingredientes
 function spawnIngredientes(scene) {
-    let ingredientesBons = ['egg', 'flour', 'almond', 'bowl'];
-    let ingredientesMaus = ['fly', 'chili_pepper'];
+    let ingredientesBons = ['egg', 'flour', 'almond', 'sugar', 'bowl'];
+    let ingredientesMaus = ['fly', 'chili_pepper', 'mouse'];
     let randomX = Phaser.Math.Between(50, 670); // Geração aleatória de posição
     let randomIngrediente;
     
@@ -111,12 +121,13 @@ function spawnIngredientes(scene) {
 
 // Função de colisão com os ingredientes
 function collectIngrediente(espatula, ingrediente) {
-    ingrediente.disableBody(true, true);
+    ingrediente.disableBody(true, true); // Desativar o ingrediente quando apanhado
 
     switch (ingrediente.texture.key) {
         case 'egg':
         case 'flour':
         case 'bowl':
+        case 'sugar':
             score += 10;
             break;
         case 'almond':
@@ -128,6 +139,10 @@ function collectIngrediente(espatula, ingrediente) {
             break;
         case 'chili_pepper':
             score -= 20;
+            break;
+        case 'mouse':
+            vidas--;
+            livesText.setText('Vidas: ' + vidas);
             break;
         case 'secret':
             vidas++;
@@ -156,7 +171,7 @@ function spawnSecret(scene) {
 // Função para aumentar a velocidade
 function aumentarVelocidade() {
     velocityMultiplier += 0.2; // Aumenta a velocidade gradualmente a cada 20 segundos
-    ingredientes.setVelocityY(ingredientes.getChildren().forEach(function (child) {
+    ingredientes.getChildren().forEach(function (child) {
         child.setVelocityY(150 * velocityMultiplier);
-    }));
+    });
 }
