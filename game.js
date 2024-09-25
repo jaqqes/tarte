@@ -7,7 +7,7 @@ const config = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 0 }, // Removemos a gravidade global
+            gravity: { y: 300 }, // Reativamos a gravidade global
             debug: false // Desativado para uma aparência limpa
         }
     },
@@ -46,11 +46,11 @@ function preload() {
         { key: 'fly', path: 'images/fly.png' },
         { key: 'chili_pepper', path: 'images/chili_pepper.png' },
         { key: 'secret', path: 'images/secret.png' },
-        { key: 'spatula', path: 'images/spatula.png' },
+        { key: 'spatula', path: 'images/spatula.png' }, // Usando 'spatula' como jogador
         { key: 'life_icon', path: 'images/life_icon.png' },
         { key: 'mouse', path: 'images/mouse.png' },
-        { key: 'sugar', path: 'images/sugar.png' },
-        { key: 'bowl', path: 'images/bowl.png' }
+        { key: 'sugar', path: 'images/sugar.png' }
+        // Removemos 'bowl' porque não temos 'bowl.png'
     ];
 
     imagens.forEach(img => {
@@ -65,7 +65,7 @@ function create() {
     // Adicionar a espátula como jogador
     espatula = this.physics.add.sprite(360, 1200, 'spatula')
         .setCollideWorldBounds(true)
-        .setScale(0.15); // Reduzido o tamanho da espátula
+        .setScale(0.08); // Reduzido o tamanho da espátula
 
     // Criar grupo de ingredientes
     ingredientes = this.physics.add.group();
@@ -84,7 +84,7 @@ function create() {
     scoreText = this.add.text(16, 16, 'Pontuação: 0', { fontSize: '32px', fill: '#fff' });
 
     // Texto de vidas
-    livesText = this.add.text(130, 60, 'Vidas:', { fontSize: '32px', fill: '#fff' }); // Reposicionado para dar espaço aos ícones
+    livesText = this.add.text(130, 60, 'Vidas:', { fontSize: '32px', fill: '#fff' }); // Reposicionado
 
     // Adicionar os ícones de vida antes do texto "Vidas:"
     addLifeIcons(this);
@@ -122,7 +122,7 @@ function update(time) {
 }
 
 function spawnIngredientes(scene) {
-    let ingredientesBons = ['egg', 'flour', 'almond', 'sugar', 'bowl'];
+    let ingredientesBons = ['egg', 'flour', 'almond', 'sugar'];
     let ingredientesMaus = ['fly', 'chili_pepper', 'mouse'];
     let randomX = Phaser.Math.Between(50, 670);
     let randomIngrediente;
@@ -135,7 +135,6 @@ function spawnIngredientes(scene) {
 
     let ingrediente = scene.physics.add.sprite(randomX, -50, randomIngrediente)
         .setScale(0.08) // Ajustado o tamanho dos ingredientes
-        .setVelocityY(200 * velocityMultiplier)
         .setCollideWorldBounds(false)
         .setBounce(0);
 
@@ -148,7 +147,6 @@ function collectIngrediente(espatula, ingrediente) {
     switch (ingrediente.texture.key) {
         case 'egg':
         case 'flour':
-        case 'bowl':
         case 'sugar':
             score += 10;
             break;
@@ -206,7 +204,6 @@ function spawnSecret(scene) {
 
     let secret = scene.physics.add.sprite(randomX, -50, 'secret')
         .setScale(0.08)
-        .setVelocityY(200 * velocityMultiplier)
         .setCollideWorldBounds(false)
         .setBounce(0);
 
@@ -227,7 +224,7 @@ function addLifeIcons(scene) {
     let spacing = 30; // Aumentado para acomodar ícones maiores
 
     for (let i = 0; i < vidas; i++) {
-        let lifeIcon = scene.add.image(startX + i * spacing, startY + 16, 'life_icon').setScale(0.08); // Dobrado o tamanho
+        let lifeIcon = scene.add.image(startX + i * spacing, startY + 16, 'life_icon').setScale(0.08); // Aumentado o tamanho
         lifeIcons.push(lifeIcon);
     }
 }
