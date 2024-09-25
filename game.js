@@ -46,6 +46,7 @@ function preload() {
     this.load.image('life_icon', 'images/life_icon.png');
     this.load.image('mouse', 'images/mouse.png'); // Adiciona o rato
     this.load.image('sugar', 'images/sugar.png'); // Adiciona o açúcar
+    this.load.image('bowl', 'images/bowl.png'); // Adiciona o bowl
 }
 
 function create() {
@@ -53,11 +54,13 @@ function create() {
     this.add.image(360, 640, 'background'); // Centraliza o background para o tamanho 720x1280
 
     // Adicionar a espátula
-    espatula = this.physics.add.sprite(360, 1100, 'spatula').setCollideWorldBounds(true);
-    
+    espatula = this.physics.add.sprite(360, 1100, 'spatula')
+        .setCollideWorldBounds(true)
+        .setScale(0.5); // Ajusta a escala da espátula
+
     // Criar grupo de ingredientes
     ingredientes = this.physics.add.group();
-    
+
     // Gerar os primeiros ingredientes periodicamente
     this.time.addEvent({
         delay: 1000,  // Intervalo de 1 segundo entre ingredientes
@@ -106,7 +109,7 @@ function spawnIngredientes(scene) {
     let ingredientesMaus = ['fly', 'chili_pepper', 'mouse'];
     let randomX = Phaser.Math.Between(50, 670); // Geração aleatória de posição
     let randomIngrediente;
-    
+
     // Decide aleatoriamente se gera um bom ou mau ingrediente
     if (Phaser.Math.Between(0, 10) > 3) {
         randomIngrediente = ingredientesBons[Phaser.Math.Between(0, ingredientesBons.length - 1)];
@@ -114,8 +117,9 @@ function spawnIngredientes(scene) {
         randomIngrediente = ingredientesMaus[Phaser.Math.Between(0, ingredientesMaus.length - 1)];
     }
 
-    let ingrediente = scene.physics.add.sprite(randomX, 0, randomIngrediente);
-    ingrediente.setVelocityY(150 * velocityMultiplier); // Controla a velocidade com base no tempo
+    let ingrediente = scene.physics.add.sprite(randomX, 0, randomIngrediente)
+        .setScale(0.2) // Ajusta a escala dos ingredientes
+        .setVelocityY(150 * velocityMultiplier); // Controla a velocidade com base no tempo
     ingredientes.add(ingrediente);
 }
 
@@ -163,8 +167,9 @@ function collectIngrediente(espatula, ingrediente) {
 // Função para gerar o "secret" que concede uma nova vida
 function spawnSecret(scene) {
     let randomX = Phaser.Math.Between(50, 670);
-    let secret = scene.physics.add.sprite(randomX, 0, 'secret'); // Adiciona o "secret"
-    secret.setVelocityY(150 * velocityMultiplier);
+    let secret = scene.physics.add.sprite(randomX, 0, 'secret')
+        .setScale(0.2) // Ajusta a escala do secret
+        .setVelocityY(150 * velocityMultiplier);
     ingredientes.add(secret);
 }
 
