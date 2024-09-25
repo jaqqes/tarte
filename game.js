@@ -233,4 +233,24 @@ function addLifeIcons(scene) {
     let spacing = 30; // Espaçamento entre os ícones
 
     for (let i = 0; i < vidas; i++) {
-        let lifeIcon = scene.add.image(startX + i * spacing, startY + 16​⬤
+        let lifeIcon = scene.add.image(startX + i * spacing, startY + 16, 'life_icon').setScale(0.08);
+        lifeIcons.push(lifeIcon);
+    }
+}
+
+function removeLifeIcon() {
+    if (lifeIcons.length > 0) {
+        let lifeIcon = lifeIcons.pop();
+        lifeIcon.destroy();
+    }
+}
+
+function addLifeIcon(scene) {
+    if (lifeIcons.length < maxLives) {
+        let startX = 16;
+        let startY = 60;
+        let spacing = 30;
+        let lifeIcon = scene.add.image(startX + lifeIcons.length * spacing, startY + 16, 'life_icon').setScale(0.08);
+        lifeIcons.push(lifeIcon);
+    }
+}
