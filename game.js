@@ -50,6 +50,7 @@ function preload() {
         { key: 'life_icon', path: 'images/life_icon.png' },
         { key: 'mouse', path: 'images/mouse.png' },
         { key: 'sugar', path: 'images/sugar.png' }
+        // Removemos 'bowl' porque não temos 'bowl.png'
     ];
 
     imagens.forEach(img => {
@@ -69,7 +70,7 @@ function create() {
     // Adicionar a espátula como jogador
     espatula = this.physics.add.sprite(360, 1200, 'spatula')
         .setCollideWorldBounds(true)
-        .setScale(0.3); // Aumentado o tamanho da espátula
+        .setScale(0.5); // Ajustado o tamanho da espátula
 
     // Criar grupo de ingredientes
     ingredientes = this.physics.add.group();
@@ -126,7 +127,7 @@ function update(time) {
 }
 
 function spawnIngredientes(scene) {
-    let ingredientesBons = ['egg', 'flour', 'almond', 'sugar'];
+    let ingredientesBons = ['egg', 'flour', 'almond', 'sugar']; // Removido 'bowl'
     let ingredientesMaus = ['fly', 'chili_pepper', 'mouse'];
     let randomX = Phaser.Math.Between(50, 670);
     let randomIngrediente;
@@ -138,7 +139,7 @@ function spawnIngredientes(scene) {
     }
 
     let ingrediente = scene.physics.add.sprite(randomX, -50, randomIngrediente)
-        .setScale(0.1) // Aumentado o tamanho dos ingredientes
+        .setScale(0.15) // Ajustado o tamanho dos ingredientes
         .setCollideWorldBounds(false)
         .setBounce(0);
 
@@ -209,7 +210,7 @@ function spawnSecret(scene) {
     let randomX = Phaser.Math.Between(50, 670);
 
     let secret = scene.physics.add.sprite(randomX, -50, 'secret')
-        .setScale(0.1)
+        .setScale(0.15) // Ajustado o tamanho
         .setCollideWorldBounds(false)
         .setBounce(0);
 
@@ -229,27 +230,7 @@ function updateLivesText() {
 function addLifeIcons(scene) {
     let startX = 16; // Posicionado antes do texto "Vidas:"
     let startY = 60;
-    let spacing = 30;
+    let spacing = 30; // Espaçamento entre os ícones
 
     for (let i = 0; i < vidas; i++) {
-        let lifeIcon = scene.add.image(startX + i * spacing, startY + 16, 'life_icon').setScale(0.08);
-        lifeIcons.push(lifeIcon);
-    }
-}
-
-function removeLifeIcon() {
-    if (lifeIcons.length > 0) {
-        let lifeIcon = lifeIcons.pop();
-        lifeIcon.destroy();
-    }
-}
-
-function addLifeIcon(scene) {
-    if (lifeIcons.length < maxLives) {
-        let startX = 16;
-        let startY = 60;
-        let spacing = 30;
-        let lifeIcon = scene.add.image(startX + lifeIcons.length * spacing, startY + 16, 'life_icon').setScale(0.08);
-        lifeIcons.push(lifeIcon);
-    }
-}
+        let lifeIcon = scene.add.image(startX + i * spacing, startY + 16​⬤
