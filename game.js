@@ -7,7 +7,7 @@ const config = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 300 }, // Aumentei a gravidade para tornar a queda mais rápida
+            gravity: { y: 300 }, // Mantém a gravidade para a queda dos ingredientes
             debug: false // Desativado para eliminar o rasto verde
         }
     },
@@ -21,7 +21,7 @@ const config = {
 const game = new Phaser.Game(config);
 
 // Variáveis do jogo
-let espatula;
+let bowlPlayer; // Substituído de espatula para bowlPlayer
 let ingredientes;
 let cursors;
 let vidas = 3;
@@ -46,11 +46,11 @@ function preload() {
         { key: 'fly', path: 'images/fly.png' },
         { key: 'chili_pepper', path: 'images/chili_pepper.png' },
         { key: 'secret', path: 'images/secret.png' },
-        { key: 'spatula', path: 'images/spatula.png' },
+        { key: 'bowl_player', path: 'images/bowl.png' }, // Renomeado para bowl_player
         { key: 'life_icon', path: 'images/life_icon.png' },
         { key: 'mouse', path: 'images/mouse.png' },
         { key: 'sugar', path: 'images/sugar.png' },
-        { key: 'bowl', path: 'images/bowl.png' }
+        { key: 'bowl_ingredient', path: 'images/bowl_ingredient.png' } // Separa o bowl do player
     ];
 
     imagens.forEach(img => {
@@ -78,11 +78,11 @@ function create() {
     this.add.image(360, 640, 'background').setScale(1);
     console.log('Plano de fundo adicionado.');
 
-    // Adicionar a espátula
-    espatula = this.physics.add.sprite(360, 1200, 'spatula') // Ajustei y para 1200 para ficar na parte inferior
+    // Adicionar o Bowl como Player
+    bowlPlayer = this.physics.add.sprite(360, 1200, 'bowl_player') // Ajustei y para 1200 para ficar na parte inferior
         .setCollideWorldBounds(true)
-        .setScale(0.5); // Aumentei para 0.5 para torná-la mais visível
-    console.log('Espátula criada:', espatula);
+        .setScale(0.4); // Ajuste o scale conforme necessário para torná-lo visível
+    console.log('Bowl Player criado:', bowlPlayer);
 
     // Criar grupo de ingredientes
     ingredientes = this.physics.add.group();
@@ -112,9 +112,9 @@ function create() {
     addLifeIcons(this);
     console.log('Ícones de vida adicionados.');
 
-    // Colisão entre espátula e ingredientes
-    this.physics.add.overlap(espatula, ingredientes, collectIngrediente, null, this);
-    console.log('Colisão entre espátula e ingredientes configurada.');
+    // Colisão entre Bowl Player e ingredientes
+    this.physics.add.overlap(bowlPlayer, ingredientes, collectIngrediente, null, this);
+    console.log('Colisão entre Bowl Player e ingredientes configurada.');
 
     // Colisão dos ingredientes com o fundo do ecrã
     ingredientes.children.iterate(function (child) {
@@ -145,13 +145,13 @@ function create() {
 
 function update(time) {
     if (cursors.left.isDown) {
-        console.log('Movendo espátula para a esquerda');
-        espatula.setVelocityX(-300); // Aumentei para 300
+        console.log('Movendo Bowl Player para a esquerda');
+        bowlPlayer.setVelocityX(-300); // Aumentei para 300
     } else if (cursors.right.isDown) {
-        console.log('Movendo espátula para a direita');
-        espatula.setVelocityX(300); // Aumentei para 300
+        console.log('Movendo Bowl Player para a direita');
+        bowlPlayer.setVelocityX(300); // Aumentei para 300
     } else {
-        espatula.setVelocityX(0);
+        bowlPlayer.setVelocityX(0);
     }
 
     if (time - lastSpeedIncrease > 20000) {
@@ -169,7 +169,7 @@ function update(time) {
 
 function spawnIngredientes(scene) {
     console.log('Tentando criar novo ingrediente');
-    let ingredientesBons = ['egg', 'flour', 'almond', 'sugar', 'bowl'];
+    let ingredientesBons = ['egg', 'flour', 'almond', 'sugar', 'bowl_ingredient'];
     let ingredientesMaus = ['fly', 'chili_pepper', 'mouse'];
     let randomX = Phaser.Math.Between(50, 670);
     let randomIngrediente;
@@ -183,7 +183,7 @@ function spawnIngredientes(scene) {
     console.log(`Spawnando ingrediente: ${randomIngrediente} na posição X: ${randomX}`);
 
     let ingrediente = scene.physics.add.sprite(randomX, 0, randomIngrediente)
-        .setScale(0.12) // Aumentei para 0.12 para dobrar o tamanho anterior de 0.06
+        .setScale(0.12) // Ajuste o scale conforme necessário para torná-lo visível
         .setVelocityY(200 * velocityMultiplier); // Aumentei a velocidade
     ingredientes.add(ingrediente);
     console.log(`Ingrediente criado: ${randomIngrediente}`);
@@ -193,14 +193,14 @@ function spawnIngredientes(scene) {
     ingrediente.body.onWorldBounds = true;
 }
 
-function collectIngrediente(espatula, ingrediente) {
+function collectIngrediente(bowl, ingrediente) {
     console.log(`Ingrediente coletado: ${ingrediente.texture.key}`);
     ingrediente.disableBody(true, true);
 
     switch (ingrediente.texture.key) {
         case 'egg':
         case 'flour':
-        case 'bowl':
+        case 'bowl_ingredient':
         case 'sugar':
             score += 10;
             break;
@@ -239,56 +239,4 @@ function collectIngrediente(espatula, ingrediente) {
 }
 
 function spawnSecret(scene) {
-    let randomX = Phaser.Math.Between(50, 670);
-    console.log(`Spawnando secret na posição X: ${randomX}`);
-    let secret = scene.physics.add.sprite(randomX, 0, 'secret')
-        .setScale(0.12) // Aumentei para 0.12 para dobrar o tamanho anterior de 0.06
-        .setVelocityY(200 * velocityMultiplier);
-    ingredientes.add(secret);
-    console.log('Secret criado');
-    secret.body.setCollideWorldBounds(true);
-    secret.body.onWorldBounds = true;
-}
-
-function aumentarVelocidade() {
-    velocityMultiplier += 0.2;
-    console.log(`Aumentando velocidade. Novo multiplier: ${velocityMultiplier}`);
-    ingredientes.getChildren().forEach(function (child) {
-        child.setVelocityY(200 * velocityMultiplier);
-    });
-}
-
-// Função para adicionar os ícones de vida
-function addLifeIcons(scene) {
-    // Definir posição inicial dos ícones de vida no canto superior esquerdo, após o texto 'Vidas:'
-    let startX = 120; // Ajustado para após 'Vidas:'
-    let startY = 60;   // Alinhado com 'Vidas:'
-    let spacing = 30;  // Espaçamento entre os ícones
-
-    for (let i = 0; i < vidas; i++) {
-        let lifeIcon = scene.add.image(startX + i * spacing, startY, 'life_icon').setScale(0.03); // Reduzido para 0.03
-        lifeIcons.push(lifeIcon);
-    }
-    console.log('Ícones de vida adicionados:', lifeIcons.length);
-}
-
-// Função para remover um ícone de vida
-function removeLifeIcon() {
-    if (lifeIcons.length > 0) {
-        let lifeIcon = lifeIcons.pop();
-        lifeIcon.destroy();
-        console.log('Ícone de vida removido. Vidas restantes:', lifeIcons.length);
-    }
-}
-
-// Função para adicionar um ícone de vida
-function addLifeIcon(scene) {
-    if (lifeIcons.length < maxLives) { // Definir um máximo, por exemplo, 5 vidas
-        let startX = 120;
-        let startY = 60;
-        let spacing = 30;
-        let lifeIcon = scene.add.image(startX + lifeIcons.length * spacing, startY, 'life_icon').setScale(0.03);
-        lifeIcons.push(lifeIcon);
-        console.log('Ícone de vida adicionado. Total vidas:', lifeIcons.length);
-    }
-}
+    let randomX = Phaser.Math​⬤
