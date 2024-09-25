@@ -35,16 +35,13 @@ let secretActive = false; // Controla se o secret pode aparecer
 
 function preload() {
     // Carregar imagens
-    this.load.image('background', 'path_to_image/background.png');
-    this.load.image('spatula', 'path_to_image/spatula.png'); // Substituir com a espátula se necessário
-    this.load.image('life_icon', 'path_to_image/life_icon.png'); // Ícone para as vidas
-    this.load.image('egg', 'path_to_image/egg.png');
-    this.load.image('flour', 'path_to_image/flour.png');
-    this.load.image('bowl', 'path_to_image/bowl.png');
-    this.load.image('almond', 'path_to_image/almond.png');
-    this.load.image('fly', 'path_to_image/fly.png');
-    this.load.image('chili_pepper', 'path_to_image/chili_pepper.png');
-    this.load.image('secret', 'path_to_image/secret.png'); // O ingrediente secreto
+this.load.image('background', 'images/background.png');
+this.load.image('egg', 'images/egg.png');
+this.load.image('flour', 'images/flour.png');
+this.load.image('almond', 'images/almond.png');
+this.load.image('fly', 'images/fly.png');
+this.load.image('chili_pepper', 'images/chili_pepper.png');
+this.load.image('secret', 'images/secret.png');
 }
 
 function create() {
