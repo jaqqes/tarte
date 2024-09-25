@@ -7,7 +7,7 @@ const config = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 300 }, // Reativamos a gravidade global
+            gravity: { y: 300 }, // Gravidade global
             debug: false // Desativado para uma aparência limpa
         }
     },
@@ -50,11 +50,15 @@ function preload() {
         { key: 'life_icon', path: 'images/life_icon.png' },
         { key: 'mouse', path: 'images/mouse.png' },
         { key: 'sugar', path: 'images/sugar.png' }
-        // Removemos 'bowl' porque não temos 'bowl.png'
     ];
 
     imagens.forEach(img => {
         this.load.image(img.key, img.path);
+    });
+
+    // Adicionar eventos de erro de carregamento
+    this.load.on('loaderror', (file) => {
+        console.error(`Erro ao carregar a imagem: ${file.key} de ${file.src}`);
     });
 }
 
@@ -65,7 +69,7 @@ function create() {
     // Adicionar a espátula como jogador
     espatula = this.physics.add.sprite(360, 1200, 'spatula')
         .setCollideWorldBounds(true)
-        .setScale(0.08); // Reduzido o tamanho da espátula
+        .setScale(0.3); // Aumentado o tamanho da espátula
 
     // Criar grupo de ingredientes
     ingredientes = this.physics.add.group();
@@ -134,9 +138,11 @@ function spawnIngredientes(scene) {
     }
 
     let ingrediente = scene.physics.add.sprite(randomX, -50, randomIngrediente)
-        .setScale(0.08) // Ajustado o tamanho dos ingredientes
+        .setScale(0.1) // Aumentado o tamanho dos ingredientes
         .setCollideWorldBounds(false)
         .setBounce(0);
+
+    ingrediente.body.allowGravity = true; // Ativar gravidade no ingrediente
 
     ingredientes.add(ingrediente);
 }
@@ -203,9 +209,11 @@ function spawnSecret(scene) {
     let randomX = Phaser.Math.Between(50, 670);
 
     let secret = scene.physics.add.sprite(randomX, -50, 'secret')
-        .setScale(0.08)
+        .setScale(0.1)
         .setCollideWorldBounds(false)
         .setBounce(0);
+
+    secret.body.allowGravity = true; // Ativar gravidade no ingrediente
 
     ingredientes.add(secret);
 }
@@ -221,10 +229,10 @@ function updateLivesText() {
 function addLifeIcons(scene) {
     let startX = 16; // Posicionado antes do texto "Vidas:"
     let startY = 60;
-    let spacing = 30; // Aumentado para acomodar ícones maiores
+    let spacing = 30;
 
     for (let i = 0; i < vidas; i++) {
-        let lifeIcon = scene.add.image(startX + i * spacing, startY + 16, 'life_icon').setScale(0.08); // Aumentado o tamanho
+        let lifeIcon = scene.add.image(startX + i * spacing, startY + 16, 'life_icon').setScale(0.08);
         lifeIcons.push(lifeIcon);
     }
 }
