@@ -1,4 +1,4 @@
-// Configuração básica do Phaser
+/ Configuração básica do Phaser
 const config = {
     type: Phaser.AUTO,
     width: 720,
@@ -46,7 +46,7 @@ function preload() {
         { key: 'fly', path: 'images/fly.png' },
         { key: 'chili_pepper', path: 'images/chili_pepper.png' },
         { key: 'secret', path: 'images/secret.png' },
-        { key: 'spatula', path: 'images/spatula.png' }, // Usando 'spatula' como jogador
+        { key: 'spatula', path: 'images/spatula.png' },
         { key: 'life_icon', path: 'images/life_icon.png' },
         { key: 'mouse', path: 'images/mouse.png' },
         { key: 'sugar', path: 'images/sugar.png' }
@@ -70,7 +70,7 @@ function create() {
     // Adicionar a espátula como jogador
     espatula = this.physics.add.sprite(360, 1200, 'spatula')
         .setCollideWorldBounds(true)
-        .setScale(0.5); // Ajustado o tamanho da espátula
+        .setScale(0.3); // Ajusta o valor conforme necessário
 
     // Criar grupo de ingredientes
     ingredientes = this.physics.add.group();
@@ -139,7 +139,7 @@ function spawnIngredientes(scene) {
     }
 
     let ingrediente = scene.physics.add.sprite(randomX, -50, randomIngrediente)
-        .setScale(0.15) // Ajustado o tamanho dos ingredientes
+        .setScale(0.1) // Ajusta o valor conforme necessário
         .setCollideWorldBounds(false)
         .setBounce(0);
 
@@ -210,7 +210,7 @@ function spawnSecret(scene) {
     let randomX = Phaser.Math.Between(50, 670);
 
     let secret = scene.physics.add.sprite(randomX, -50, 'secret')
-        .setScale(0.15) // Ajustado o tamanho
+        .setScale(0.1) // Ajusta o valor conforme necessário
         .setCollideWorldBounds(false)
         .setBounce(0);
 
