@@ -46,11 +46,11 @@ function preload() {
         { key: 'fly', path: 'images/fly.png' },
         { key: 'chili_pepper', path: 'images/chili_pepper.png' },
         { key: 'secret', path: 'images/secret.png' },
-        { key: 'spatula', path: 'images/spatula.png' }, // Usando 'spatula' como jogador
+        { key: 'spatula', path: 'images/spatula.png' },
         { key: 'life_icon', path: 'images/life_icon.png' },
         { key: 'mouse', path: 'images/mouse.png' },
         { key: 'sugar', path: 'images/sugar.png' },
-        { key: 'bowl', path: 'images/bowl.png' } // Mantendo 'bowl' como ingrediente
+        { key: 'bowl', path: 'images/bowl.png' }
     ];
 
     imagens.forEach(img => {
@@ -81,7 +81,7 @@ function create() {
     // Adicionar a espátula como jogador
     espatula = this.physics.add.sprite(360, 1200, 'spatula') // Posicionado na parte inferior
         .setCollideWorldBounds(true)
-        .setScale(0.5); // Ajuste o scale conforme necessário
+        .setScale(0.25); // Reduzido para metade do tamanho
     console.log('Espátula criada:', espatula);
 
     // Criar grupo de ingredientes
@@ -108,10 +108,10 @@ function create() {
     console.log('Texto de pontuação adicionado.');
 
     // Texto de vidas
-    livesText = this.add.text(16, 60, 'Vidas:', { fontSize: '32px', fill: '#fff' });
+    livesText = this.add.text(100, 60, 'Vidas:', { fontSize: '32px', fill: '#fff' }); // Reposicionado para dar espaço aos ícones
     console.log('Texto de vidas adicionado.');
 
-    // Adicionar os ícones de vida
+    // Adicionar os ícones de vida antes do texto "Vidas:"
     addLifeIcons(this);
     console.log('Ícones de vida adicionados.');
 
@@ -119,26 +119,13 @@ function create() {
     this.physics.add.overlap(espatula, ingredientes, collectIngrediente, null, this);
     console.log('Colisão entre espátula e ingredientes configurada.');
 
-    // Evento para ingredientes que saem dos limites do mundo
-    this.physics.world.on('worldbounds', function (body) {
-        if (body.gameObject && ingredientes.contains(body.gameObject)) {
-            // Ingrediente alcançou o fundo da tela sem ser apanhado
-            console.log(`Ingrediente perdido: ${body.gameObject.texture.key}`);
-            if (body.gameObject.texture.key !== 'mouse') { // Se não for 'mouse', decrementa vida
-                vidas--;
-                if (vidas < 0) vidas = 0;
-                updateLivesText();
-                removeLifeIcon();
-            }
-            body.gameObject.destroy();
-            if (vidas <= 0 && !gameOver) {
-                gameOver = true;
-                this.add.text(200, 600, 'Game Over!', { fontSize: '64px', fill: '#ff0000' });
-                this.physics.pause();
-                console.log('Game Over!');
-            }
-        }
-    }, this);
+    // Criar um sensor na parte inferior da tela para detectar ingredientes que atingem o fundo
+    let bottomSensor = this.physics.add.staticImage(360, 1280, null).setDisplaySize(720, 10);
+    bottomSensor.visible = false; // Tornar invisível
+
+    // Detectar colisão entre ingredientes e o sensor inferior
+    this.physics.add.overlap(ingredientes, bottomSensor, ingredienteAtingiuFundo, null, this);
+    console.log('Sensor inferior configurado.');
 }
 
 function update(time) {
@@ -178,10 +165,9 @@ function spawnIngredientes(scene) {
     let ingrediente = scene.physics.add.sprite(randomX, -50, randomIngrediente)
         .setScale(0.12) // Ajuste o scale conforme necessário
         .setVelocityY(200 * velocityMultiplier)
-        .setCollideWorldBounds(true)
+        .setCollideWorldBounds(false)
         .setBounce(0);
 
-    ingrediente.body.onWorldBounds = true;
     ingrediente.body.allowGravity = true;
 
     ingredientes.add(ingrediente);
@@ -231,16 +217,32 @@ function collectIngrediente(espatula, ingrediente) {
     }
 }
 
+function ingredienteAtingiuFundo(ingrediente, sensor) {
+    console.log(`Ingrediente atingiu o fundo: ${ingrediente.texture.key}`);
+    if (ingrediente.texture.key !== 'mouse') {
+        vidas--;
+        if (vidas < 0) vidas = 0;
+        updateLivesText();
+        removeLifeIcon();
+    }
+    ingrediente.destroy();
+    if (vidas <= 0 && !gameOver) {
+        gameOver = true;
+        this.add.text(200, 600, 'Game Over!', { fontSize: '64px', fill: '#ff0000' });
+        this.physics.pause();
+        console.log('Game Over!');
+    }
+}
+
 function spawnSecret(scene) {
     let randomX = Phaser.Math.Between(50, 670);
 
     let secret = scene.physics.add.sprite(randomX, -50, 'secret')
         .setScale(0.12)
         .setVelocityY(200 * velocityMultiplier)
-        .setCollideWorldBounds(true)
+        .setCollideWorldBounds(false)
         .setBounce(0);
 
-    secret.body.onWorldBounds = true;
     secret.body.allowGravity = true;
 
     ingredientes.add(secret);
@@ -256,12 +258,12 @@ function updateLivesText() {
 }
 
 function addLifeIcons(scene) {
-    let startX = 120; // Após 'Vidas:'
+    let startX = 16; // Posicionado antes do texto "Vidas:"
     let startY = 60;
-    let spacing = 20;
+    let spacing = 30; // Aumentado para acomodar ícones maiores
 
     for (let i = 0; i < vidas; i++) {
-        let lifeIcon = scene.add.image(startX + i * spacing, startY, 'life_icon').setScale(0.02);
+        let lifeIcon = scene.add.image(startX + i * spacing, startY + 16, 'life_icon').setScale(0.04); // Dobrado o tamanho
         lifeIcons.push(lifeIcon);
     }
 }
@@ -275,10 +277,10 @@ function removeLifeIcon() {
 
 function addLifeIcon(scene) {
     if (lifeIcons.length < maxLives) {
-        let startX = 120;
+        let startX = 16;
         let startY = 60;
-        let spacing = 20;
-        let lifeIcon = scene.add.image(startX + lifeIcons.length * spacing, startY, 'life_icon').setScale(0.02);
+        let spacing = 30;
+        let lifeIcon = scene.add.image(startX + lifeIcons.length * spacing, startY + 16, 'life_icon').setScale(0.04);
         lifeIcons.push(lifeIcon);
     }
 }
